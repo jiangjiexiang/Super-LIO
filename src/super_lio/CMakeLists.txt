@@ -97,3 +97,9 @@ target_link_libraries(relocation_node
   lio
   ${catkin_LIBRARIES}
 )
+
+catkin_install_python(PROGRAMS
+  scripts/rtk_path_node.py
+  scripts/lio_rtk_ekf_node.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

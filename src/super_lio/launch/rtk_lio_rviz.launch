@@ -1,0 +1,44 @@
+<launch>
+
+  <arg name="rviz" default="true" />
+  <arg name="rtk_path" default="true" />
+  <arg name="rtk_topic" default="/apollo/localization/ins570d/pose" />
+  <arg name="rtk_path_topic" default="/rtk/path" />
+  <arg name="rtk_relative" default="true" />
+  <arg name="rtk_use_altitude" default="false" />
+  <arg name="rtk_yaw_offset_deg" default="0.0" />
+  <arg name="rtk_auto_align_yaw" default="true" />
+  <arg name="rtk_align_min_dist" default="3.0" />
+  <arg name="rtk_path_publish_hz" default="30" />
+  <arg name="rtk_gnss_raw_topic" default="/apollo/sensor/gnss/raw_data" />
+  <arg name="rtk_min_fix_quality" default="4" />
+  <arg name="rtk_require_gnss_fix" default="true" />
+  <arg name="rtk_require_rtk_fixed" default="true" />
+
+  <rosparam file="$(find super_lio)/config/livox_360.yaml" command="load"/>
+
+  <node pkg="super_lio" type="super_lio_node" name="super_lio_node" output="screen"/>
+
+  <group if="$(arg rtk_path)">
+    <node pkg="super_lio" type="rtk_path_node.py" name="rtk_path_node" output="screen">
+      <param name="rtk_topic" value="$(arg rtk_topic)" />
+      <param name="path_topic" value="$(arg rtk_path_topic)" />
+      <param name="frame_id" value="world" />
+      <param name="relative" value="$(arg rtk_relative)" />
+      <param name="use_altitude" value="$(arg rtk_use_altitude)" />
+      <param name="yaw_offset_deg" value="$(arg rtk_yaw_offset_deg)" />
+      <param name="auto_align_yaw" value="$(arg rtk_auto_align_yaw)" />
+      <param name="align_min_dist" value="$(arg rtk_align_min_dist)" />
+      <param name="path_publish_hz" value="$(arg rtk_path_publish_hz)" />
+      <param name="gnss_raw_topic" value="$(arg rtk_gnss_raw_topic)" />
+      <param name="min_fix_quality" value="$(arg rtk_min_fix_quality)" />
+      <param name="require_gnss_fix" value="$(arg rtk_require_gnss_fix)" />
+      <param name="require_rtk_fixed" value="$(arg rtk_require_rtk_fixed)" />
+    </node>
+  </group>
+
+  <group if="$(arg rviz)">
+    <node pkg="rviz" type="rviz" name="super_lio" args="-d $(find super_lio)/rviz/lio.rviz" />
+  </group>
+
+</launch>

@@ -1,0 +1,72 @@
+<launch>
+  <!-- Apollo Mid360 + INS570D bag: /home/jiang/apollo2rosbag/0522rosbag1 -->
+
+  <arg name="rviz" default="true" />
+  <arg name="rtk_path" default="true" />
+  <arg name="rtk_topic" default="/apollo/localization/ins570d/pose" />
+  <arg name="rtk_path_topic" default="/rtk/path" />
+  <arg name="rtk_relative" default="true" />
+  <arg name="rtk_auto_align_yaw" default="true" />
+  <arg name="rtk_align_min_dist" default="3.0" />
+  <arg name="rtk_yaw_offset_deg" default="0.0" />
+  <arg name="rtk_extra_yaw_offset_deg" default="0.0" />
+  <arg name="path_compare_every_n" default="100" />
+  <arg name="rtk_path_publish_hz" default="30" />
+  <arg name="rtk_gnss_raw_topic" default="/apollo/sensor/gnss/raw_data" />
+  <arg name="rtk_min_fix_quality" default="4" />
+  <arg name="rtk_require_gnss_fix" default="true" />
+  <arg name="rtk_require_rtk_fixed" default="true" />
+  <arg name="fusion_ekf" default="true" />
+  <arg name="fusion_path_topic" default="/fusion/path" />
+
+  <rosparam file="$(find super_lio)/config/apollo_livox.yaml" command="load"/>
+
+  <node pkg="super_lio" type="super_lio_node" name="super_lio_node" output="screen"/>
+
+  <group if="$(arg rtk_path)">
+    <node pkg="super_lio" type="rtk_path_node.py" name="rtk_path_node" output="screen">
+      <param name="rtk_topic" value="$(arg rtk_topic)" />
+      <param name="path_topic" value="$(arg rtk_path_topic)" />
+      <param name="frame_id" value="world" />
+      <param name="relative" value="$(arg rtk_relative)" />
+      <param name="auto_align_yaw" value="$(arg rtk_auto_align_yaw)" />
+      <param name="align_min_dist" value="$(arg rtk_align_min_dist)" />
+      <param name="yaw_offset_deg" value="$(arg rtk_yaw_offset_deg)" />
+      <param name="extra_yaw_offset_deg" value="$(arg rtk_extra_yaw_offset_deg)" />
+      <param name="compare_every_n" value="$(arg path_compare_every_n)" />
+      <param name="path_publish_hz" value="$(arg rtk_path_publish_hz)" />
+      <param name="gnss_raw_topic" value="$(arg rtk_gnss_raw_topic)" />
+      <param name="min_fix_quality" value="$(arg rtk_min_fix_quality)" />
+      <param name="require_gnss_fix" value="$(arg rtk_require_gnss_fix)" />
+      <param name="require_rtk_fixed" value="$(arg rtk_require_rtk_fixed)" />
+      <param name="resume_jump_xy" value="80" />
+      <param name="gap_resume_sec" value="8" />
+    </node>
+  </group>
+
+  <group if="$(arg fusion_ekf)">
+    <node pkg="super_lio" type="lio_rtk_ekf_node.py" name="lio_rtk_ekf_node" output="screen">
+      <param name="lio_odom_topic" value="/lio/odom" />
+      <param name="rtk_topic" value="$(arg rtk_topic)" />
+      <param name="gnss_raw_topic" value="$(arg rtk_gnss_raw_topic)" />
+      <param name="path_topic" value="$(arg fusion_path_topic)" />
+      <param name="auto_align_yaw" value="$(arg rtk_auto_align_yaw)" />
+      <param name="align_min_dist" value="$(arg rtk_align_min_dist)" />
+      <param name="yaw_offset_deg" value="$(arg rtk_yaw_offset_deg)" />
+      <param name="extra_yaw_offset_deg" value="$(arg rtk_extra_yaw_offset_deg)" />
+      <param name="min_fix_quality" value="$(arg rtk_min_fix_quality)" />
+      <param name="require_rtk_fixed" value="$(arg rtk_require_rtk_fixed)" />
+      <param name="sigma_lio" value="0.08" />
+      <param name="sigma_rtk" value="0.05" />
+      <param name="sigma_rtk_float" value="0.35" />
+      <param name="sigma_rtk_z" value="0.12" />
+      <param name="max_rtk_jump_xy" value="3.0" />
+      <param name="resume_rtk_jump_xy" value="80" />
+      <param name="gap_resume_sec" value="8" />
+    </node>
+  </group>
+
+  <group if="$(arg rviz)">
+    <node pkg="rviz" type="rviz" name="super_lio" args="-d $(find super_lio)/rviz/lio.rviz" />
+  </group>
+</launch>
